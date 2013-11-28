@@ -9,11 +9,11 @@ using namespace arma;
 
 const double PI = 3.1415926535;
 
-vec createPosition(long seed, double R) {
+vec createPosition(long *seed, double R) {
 
-	double u = ran2(&seed);
-	double v = ran2(&seed);
-	double w = ran2(&seed);
+	double u = ran2(seed);
+	double v = ran2(seed);
+	double w = ran2(seed);
 
 	double phi = 2.*PI*w;
 	double theta = acos(1-2*v);
@@ -33,7 +33,7 @@ vec createVelocity() {
 	return b;
 }
 
-double createMass(long seed, double mean, double deviation) {
+double createMass(long *seed, double mean, double deviation) {
 
-	return mean + deviation * gaussian_deviate(&seed);
+	return mean + deviation * gaussian_deviate(seed);
 }

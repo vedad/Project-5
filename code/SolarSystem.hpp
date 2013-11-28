@@ -8,7 +8,7 @@ class SolarSystem {
 	
 	public:
 		SolarSystem(string);
-		SolarSystem(int);
+		SolarSystem(int, double);
 		vec getSystemForce(CelestialObject);
 		vec getSystemAcceleration(CelestialObject);
 		void addObject(CelestialObject);
@@ -23,8 +23,11 @@ class SolarSystem {
 		void setCenterOfMassPosition();
 		vec getTotalMomentum();
 		void setTotalMomentum();
+		double getGravConst();
 
 	
 		vector<CelestialObject> objects;
+		double R;
+		int N;
 
 };

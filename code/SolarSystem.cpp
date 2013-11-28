@@ -11,6 +11,7 @@ using namespace std;
 using namespace arma;
 
 const double DIMENSION = 3;
+const double PI = 3.1415926535;
 /* Need to change gravitational constant so that it can be used with AU as the
  * unit of length, and years as the unit of time */
 
@@ -31,18 +32,19 @@ SolarSystem :: SolarSystem(string systemfile) {
 		cout << "Added: " << newObject.getName() << endl;
 	}
 }
-SolarSystem :: SolarSystem(int N) {
+SolarSystem :: SolarSystem(int N, double R) {
 	
+	this->R = R;
+	this->N = N;
+
 	long seed1 = -1;
 	long seed2 = -2;
 
 	for (int i=0; i < N; i++) {
 		
-
-
 		vec velocity = createVelocity();
-		vec position = createPosition(seed1, 20);
-		double mass = createMass(seed2, 10.0, 1.0);
+		vec position = createPosition(&seed1, R);
+		double mass = createMass(&seed2, 10.0, 1.0);
 		CelestialObject newObject = CelestialObject(position, velocity, mass);
 		addObject(newObject);
 	}
@@ -282,7 +284,7 @@ vec SolarSystem :: getSystemForce(CelestialObject object) {
 		}
 	}
 
-	return systemForce;
+	return (getGravConst() * systemForce);
 }
 
 // Calculating the acceleration of an object.
@@ -382,6 +384,15 @@ void SolarSystem :: setTotalMomentum() {
 //	objects[0].setVelocity(objects[0].getVelocity() * 0);
 	vec totalMomentum = getTotalMomentum();
 	objects[0].setVelocity(objects[0].getVelocity() - totalMomentum/objects[0].getMass());
+}
+
+double SolarSystem :: getGravConst() {
+	
+	totalMass = N * 10	
+	double volume = (4./3) * PI * pow(R,3);
+	double density = totalMass / volume;
+	double gravConst = (3 * PI) / (32 * density);
+	return gravConst;
 }
 
 
