@@ -13,6 +13,13 @@ CelestialObject :: CelestialObject(string name, vec position, vec velocity, doub
 	this->name = name;
 
 }
+
+CelestialObject :: CelestialObject(vec position, vec velocity, double mass) {
+
+	this->mass = mass;
+	this->position = position;
+	this->velocity = velocity;
+}
 // Set-functions
 void CelestialObject :: setVelocity(vec newVelocity) {
 

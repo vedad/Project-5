@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <ctime>
+#include "makeObjects.hpp"
 #include "SolarSystem.hpp"
 
 using namespace std;
@@ -29,6 +30,23 @@ SolarSystem :: SolarSystem(string systemfile) {
 		addObject(newObject);
 		cout << "Added: " << newObject.getName() << endl;
 	}
+}
+SolarSystem :: SolarSystem(int N) {
+	
+	long seed1 = -1;
+	long seed2 = -2;
+
+	for (int i=0; i < N; i++) {
+		
+
+
+		vec velocity = createVelocity();
+		vec position = createPosition(seed1, 20);
+		double mass = createMass(seed2, 10.0, 1.0);
+		CelestialObject newObject = CelestialObject(position, velocity, mass);
+		addObject(newObject);
+	}
+
 }
 
 void SolarSystem :: addObject(CelestialObject newObject) {
@@ -170,11 +188,14 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 	vector<ofstream*> objectFileList;
 
 	for (int i=0; i < getNoOfObjects(); i++) {
-				
+		
+		ostringstream ss;
+		ss << i;
+		string name = ss.str();
 		ostringstream objectFile;
-		objectFile << "../data/objects/" << objects[i].getName() << ".dat";
+		objectFile << "../data/objects/" << name << ".dat";
 		newPositionFile = new ofstream(objectFile.str().c_str());
-		*newPositionFile << "Positions for: " << objects[i].getName() << endl;
+		*newPositionFile << "Positions for: " << name << endl;
 		objectFileList.push_back(newPositionFile);
 				
 	}

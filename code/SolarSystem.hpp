@@ -8,6 +8,7 @@ class SolarSystem {
 	
 	public:
 		SolarSystem(string);
+		SolarSystem(int);
 		vec getSystemForce(CelestialObject);
 		vec getSystemAcceleration(CelestialObject);
 		void addObject(CelestialObject);
