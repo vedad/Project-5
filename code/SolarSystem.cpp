@@ -45,7 +45,10 @@ SolarSystem :: SolarSystem(int N, double R) {
 		vec velocity = createVelocity();
 		vec position = createPosition(&seed1, R);
 		double mass = createMass(&seed2, 10.0, 1.0);
-		CelestialObject newObject = CelestialObject(position, velocity, mass);
+		ostringstream ss;
+		ss << i;
+		string name = ss.str();
+		CelestialObject newObject = CelestialObject(name, position, velocity, mass);
 		addObject(newObject);
 	}
 
@@ -61,7 +64,7 @@ void SolarSystem :: leapFrog(double dt) {
 	
 	mat newVelocity = zeros<mat>(DIMENSION, getNoOfObjects());
 	mat newPosition = zeros<mat>(DIMENSION, getNoOfObjects());
-
+	
 	for (int i=0; i < getNoOfObjects(); i++) {
 		newVelocity.col(i) = objects[i].getVelocity() + 0.5 * dt * getSystemAcceleration(objects[i]);
 		newPosition.col(i) = objects[i].getPosition() + dt * newVelocity.col(i);
@@ -76,6 +79,7 @@ void SolarSystem :: leapFrog(double dt) {
 		newVelocity.col(i) = objects[i].getVelocity() + 0.5 * dt * getSystemAcceleration(objects[i]);
 		objects[i].setVelocity(newVelocity.col(i));
 	}
+
 	
 }
 
@@ -165,9 +169,9 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		for (int i=0; i < getNoOfObjects(); i++) {
 			
 			ostringstream energyFile;
-			energyFile << "../data/conservations/energy/" << objects[i].getName() << ".dat";
+			energyFile << "../data/conservations/energy/obj" << objects[i].getName() << ".dat";
 			newEnergyFile = new ofstream(energyFile.str().c_str());
-//			*newEnergyFile << "Energy for: " << objects[i].getName() << endl;
+			*newEnergyFile << "Energy for: " << objects[i].getName() << endl;
 			objectEnergyList.push_back(newEnergyFile);
 
 		}
@@ -191,13 +195,10 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 
 	for (int i=0; i < getNoOfObjects(); i++) {
 		
-		ostringstream ss;
-		ss << i;
-		string name = ss.str();
 		ostringstream objectFile;
-		objectFile << "../data/objects/" << name << ".dat";
+		objectFile << "../data/objects/obj" <<  objects[i].getName() << ".dat";
 		newPositionFile = new ofstream(objectFile.str().c_str());
-		*newPositionFile << "Positions for: " << name << endl;
+		*newPositionFile << "Positions for: " << objects[i].getName() << endl;
 		objectFileList.push_back(newPositionFile);
 				
 	}
@@ -236,23 +237,24 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		double totalTime = 0;
 		clock_t start, finish;
 
-		for (double t=0; t < tMax; t+=dt) {
-		
-			start = clock();
-			this->leapFrog(dt);
-			finish = clock();
-			totalTime += double(finish - start)/CLOCKS_PER_SEC;
-		
-			for (int i=0; i < getNoOfObjects(); i++) {
-				*objectFileList[i] << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << endl;
+		for (double t=0; t <= tMax; t+=dt) {
 
+			for (int i=0; i < getNoOfObjects(); i++) {
+				*objectFileList[i] << t << " " << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << endl;
 				if (energy) {
-					*objectEnergyList[i] << t << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << endl;
+					*objectEnergyList[i] << t << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
 				}
 				if (angMom) {
 					*objectAngMomList[i] << t << " " << getAngularMomentum(objects[i]) << endl;
 				}
 			}
+
+			start = clock();
+			this->leapFrog(dt);
+			finish = clock();
+			totalTime += double(finish - start)/CLOCKS_PER_SEC;
+		
+			
 		}
 		double avgTimeStep = totalTime / (tMax / dt);
 		cout << "Computation time for one timestep using Leapfrog: " << avgTimeStep << " seconds" << endl;
@@ -266,6 +268,14 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 	
 //	outFile.close();
 }
+
+int SolarSystem :: getBoundObjects(CelestialObject object) {
+	
+//	for (int i=0; i < getNoOfObjects(); i++) {
+	if (getTotalEnergy(object) > 0) { return 0; }
+	return 1;
+}
+
 
 // Calculating the force from all celestial objects on an object
 vec SolarSystem :: getSystemForce(CelestialObject object) {
@@ -346,7 +356,7 @@ double SolarSystem :: getSystemPotentialEnergy(CelestialObject object) {
 			potentialEnergy += object.getPotentialEnergy(objects[i]);
 		}
 	}
-	return potentialEnergy;
+	return getGravConst() * potentialEnergy;
 }
 
 vec SolarSystem :: getCenterOfMassPosition() {
@@ -388,7 +398,7 @@ void SolarSystem :: setTotalMomentum() {
 
 double SolarSystem :: getGravConst() {
 	
-	totalMass = N * 10	
+	double totalMass = N * 10;
 	double volume = (4./3) * PI * pow(R,3);
 	double density = totalMass / volume;
 	double gravConst = (3 * PI) / (32 * density);

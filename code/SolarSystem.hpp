@@ -24,6 +24,7 @@ class SolarSystem {
 		vec getTotalMomentum();
 		void setTotalMomentum();
 		double getGravConst();
+		int getBoundObjects(CelestialObject);
 
 	
 		vector<CelestialObject> objects;
