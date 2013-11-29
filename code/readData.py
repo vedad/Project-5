@@ -8,8 +8,7 @@ def readInfo():
 	global N, R0, dt, Tmax, n
 	info = infoFile.readline().split()
 	N, R0, dt, Tmax = int(info[0]), float(info[1]), float(info[2]), float(info[3])
-	n = int(round(Tmax / dt))
-
+	n = int(round(Tmax / dt)) + 1
 	infoFile.close()
 	return None
 readInfo()
@@ -32,16 +31,16 @@ def readPositions():
 			positions[i,j,2] = float(info[3])
 			j += 1
 		inFile.close()	
-	print time
 	return None
 readPositions()
 
 def readEnergy():
 
-	global totalEnergy
+	global totalEnergy, kineticEnergy, bound
 #	totalEnergy = np.zeros(n)
 	kineticEnergy = np.zeros(n)
 	potentialEnergy = np.zeros(n)
+#	bound = np.zeros((n,N))
 	
 	for i in range(N):
 		inFile = open("../data/conservations/energy/obj%s.dat" % i, 'r')
@@ -51,12 +50,13 @@ def readEnergy():
 			info = line.split()
 			objectKinEn = float(info[1])
 			objectPotEn = float(info[2])
+#			bound[i,j] = int(info[4])	
 			kineticEnergy[j] += objectKinEn
 			potentialEnergy[j] += objectPotEn
 			objectKinEn = 0
 			objectPotEn = 0
 			j += 1
-
+	
 	potentialEnergy /= 2.
 	totalEnergy = kineticEnergy + potentialEnergy
 	return None
@@ -65,7 +65,6 @@ readEnergy()
 		
 def animateCluster():
 
-	plt.ion()
 	fig = plt.figure()
 	fig.suptitle('$\mathrm{Evolution \ of \ star \ cluster}$. $N = %g$, $R_0 = %g$, $dt = %g$' % (N,R0,dt))
 	
@@ -89,8 +88,6 @@ def animateCluster():
 			dots[j].set_data([x],[y])
 			dots[j].set_3d_properties([z])
 		plt.draw()
-	plt.ioff()
-	plt.show()
 	return None
 
 def plotEnergy():
@@ -104,7 +101,11 @@ def plotEnergy():
 	ax.set_ylabel('$\mathrm{Total \ energy}$', fontsize='14')
 	ax.plot(time,totalEnergy)
 	ax.grid('on')
-	plt.show()
 	return None
+
+plt.ion()
 plotEnergy()
-animateCluster()
+#animateCluster()
+plt.ioff()
+
+plt.show()
