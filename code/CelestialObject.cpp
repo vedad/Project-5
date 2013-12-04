@@ -5,7 +5,7 @@
 using namespace std;
 using namespace arma;
 
-const double EPSILON = 0.15;
+const double EPSILON = 0.00;
 
 CelestialObject :: CelestialObject(string name, vec position, vec velocity, double mass) {
 
@@ -48,7 +48,7 @@ vec CelestialObject :: getForce(CelestialObject other) {
 	
 	vec r = this->getDistanceTo(other);
 	double absR = norm(r,2);
-	vec force = (this->getMass() * other.getMass() / (pow(absR,2) + pow(EPSILON,2))) * r/absR;
+	vec force = (this->getMass() * other.getMass() / (pow(absR,2) + pow(EPSILON,2))) * r / absR;
 	return force;
 		
 }

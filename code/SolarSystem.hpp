@@ -25,6 +25,10 @@ class SolarSystem {
 		void setTotalMomentum();
 		double getGravConst();
 		int getBoundObjects(CelestialObject);
+		double getClusterEnergy();
+		double getBoundClusterEnergy();
+		double getClusterPotentialEnergy();
+		double getClusterKineticEnergy();
 
 	
 		vector<CelestialObject> objects;

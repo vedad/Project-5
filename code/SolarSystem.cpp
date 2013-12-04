@@ -169,7 +169,7 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		for (int i=0; i < getNoOfObjects(); i++) {
 			
 			ostringstream energyFile;
-			energyFile << "../data/conservations/energy/obj" << objects[i].getName() << ".dat";
+			energyFile << "../data/energy/objects/obj" << objects[i].getName() << ".dat";
 			newEnergyFile = new ofstream(energyFile.str().c_str());
 			*newEnergyFile << "Energy for: " << objects[i].getName() << endl;
 			objectEnergyList.push_back(newEnergyFile);
@@ -202,7 +202,7 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		objectFileList.push_back(newPositionFile);
 				
 	}
-
+	cout << objectFileList.size() << endl;
 	cout << "Advancing system..." << endl;
 	
 	if (solver.compare("RK4") == 0) {
@@ -210,23 +210,22 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		double totalTime = 0;
 		clock_t start, finish;
 
-		for (double t=0; t < tMax; t+=dt) {
+		for (double t=0; t <= tMax; t+=dt) {
 			
-			start = clock();
-			this->advance(dt);
-			finish = clock();
-			totalTime += double(finish - start)/CLOCKS_PER_SEC;
-		
+					
 			for (int i=0; i < getNoOfObjects(); i++) {
 				*objectFileList[i] << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << endl;
 
 				if (energy) {
 					*objectEnergyList[i] << t << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << endl;
 				}
-				if (angMom) {
-					*objectAngMomList[i] << t << " " << getAngularMomentum(objects[i]) << endl;
-				}
 			}
+
+			start = clock();
+			this->advance(dt);
+			finish = clock();
+			totalTime += double(finish - start)/CLOCKS_PER_SEC;
+
 		}
 		double avgTimeStep = totalTime / (tMax / dt);
 		cout << "Computation time for one timestep using RK4: " << avgTimeStep << " seconds" << endl;
@@ -237,25 +236,30 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		double totalTime = 0;
 		clock_t start, finish;
 
+		fstream clusterEnergyFile;
+		clusterEnergyFile.open("../data/energy/cluster/clusterEnergy.dat", ios::out);
+
 		for (double t=0; t <= tMax; t+=dt) {
 
 			for (int i=0; i < getNoOfObjects(); i++) {
 				*objectFileList[i] << t << " " << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << endl;
+
 				if (energy) {
+					
 					*objectEnergyList[i] << t << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
 				}
-				if (angMom) {
-					*objectAngMomList[i] << t << " " << getAngularMomentum(objects[i]) << endl;
-				}
 			}
-
+			
+			if (energy) {
+				clusterEnergyFile << t << " " << getClusterKineticEnergy() << " " << getClusterPotentialEnergy() << " " << getClusterEnergy() << " " << getBoundClusterEnergy() << endl;
+			}
 			start = clock();
 			this->leapFrog(dt);
 			finish = clock();
 			totalTime += double(finish - start)/CLOCKS_PER_SEC;
-		
-			
 		}
+
+		clusterEnergyFile.close();
 		double avgTimeStep = totalTime / (tMax / dt);
 		cout << "Computation time for one timestep using Leapfrog: " << avgTimeStep << " seconds" << endl;
 	}
@@ -263,7 +267,6 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 	for (int i = 0; i < getNoOfObjects(); i++) {
 		objectFileList[i]->close();
 		if (energy) { objectEnergyList[i]->close(); }
-		if (angMom) { objectAngMomList[i]->close(); }
 	}
 	
 //	outFile.close();
@@ -283,6 +286,7 @@ vec SolarSystem :: getSystemForce(CelestialObject object) {
 	// Initialize systemForce as a vector of size 2, with zeros as entries since
 	// I use += function below.
 	vec systemForce = zeros<vec>(DIMENSION);
+	#pragma omp parallel for private (r) shared (systemForce)
 	for (int i=0; i < getNoOfObjects(); i++) {
 	
 		if (object.getName() == objects[i].getName()) { continue; }
@@ -294,7 +298,7 @@ vec SolarSystem :: getSystemForce(CelestialObject object) {
 		}
 	}
 
-	return (getGravConst() * systemForce);
+	return systemForce; // * getGravConst
 }
 
 // Calculating the acceleration of an object.
@@ -320,6 +324,74 @@ double SolarSystem :: getAngularMomentum(CelestialObject object) {
 	return angularMomentum;
 
 }
+	
+double SolarSystem :: getClusterPotentialEnergy() {
+
+	double clusterPotentialEnergy = 0.0;
+	for (int i=0; i < getNoOfObjects(); i++) {
+		for (int j=0; j < i; j++) {
+			clusterPotentialEnergy += objects[i].getPotentialEnergy(objects[j]);
+		}
+	}
+	return getGravConst() * clusterPotentialEnergy;
+}
+
+double SolarSystem :: getClusterKineticEnergy() {
+
+	double clusterKineticEnergy = 0.0;
+	for (int i=0; i < getNoOfObjects(); i++) {
+		clusterKineticEnergy += objects[i].getKineticEnergy(objects[i]);
+	}
+	return clusterKineticEnergy;
+}
+/* 
+double SolarSystem :: getBoundClusterKineticEnergy() {
+
+	double kineticEnergy = 0.0;
+
+	for (int i=0; i < getNoOfObjects(); i++) {
+		if (getTotalEnergy(objects[i]) < 0) {
+			c
+		}
+	}
+
+}
+*/
+double SolarSystem :: getBoundClusterEnergy() {
+
+	double clusterPotentialEnergy = 0.0;
+	double clusterKineticEnergy = 0.0;
+
+	for (int i=0; i < getNoOfObjects(); i++) {
+		if (getTotalEnergy(objects[i]) < 0) {
+			clusterKineticEnergy += objects[i].getKineticEnergy(objects[i]);
+			for (int j=0; j < i; j++) {
+				clusterPotentialEnergy += objects[i].getPotentialEnergy(objects[j]);
+			}
+		}
+	}
+
+	double clusterEnergy = clusterKineticEnergy + getGravConst() * clusterPotentialEnergy;
+	return clusterEnergy;	
+}
+
+double SolarSystem :: getClusterEnergy() {
+
+	double clusterPotentialEnergy = 0.0;
+	double clusterKineticEnergy = 0.0;
+
+	for (int i=0; i < getNoOfObjects(); i++) {
+		clusterKineticEnergy += objects[i].getKineticEnergy(objects[i]);
+		for (int j=0; j < i; j++) {
+			clusterPotentialEnergy += objects[i].getPotentialEnergy(objects[j]);
+		}
+	}
+	double clusterEnergy = clusterKineticEnergy + getGravConst() * clusterPotentialEnergy;
+
+	return clusterEnergy;
+
+}
+
 
 // Calculating the total energy of an object.
 double SolarSystem :: getTotalEnergy(CelestialObject object) {
@@ -356,7 +428,7 @@ double SolarSystem :: getSystemPotentialEnergy(CelestialObject object) {
 			potentialEnergy += object.getPotentialEnergy(objects[i]);
 		}
 	}
-	return getGravConst() * potentialEnergy;
+	return  potentialEnergy; // * getGravConst()
 }
 
 vec SolarSystem :: getCenterOfMassPosition() {
