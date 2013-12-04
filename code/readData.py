@@ -31,7 +31,6 @@ def readPositions():
 	
 	global positions
 	positions = np.zeros((N,n,3))
-#	time = np.zeros(n)
 	
 	for i in range(N):
 		inFile = open("../data/objects/obj%s.dat" % i, 'r')
@@ -39,7 +38,6 @@ def readPositions():
 		j = 0
 		for line in inFile:
 			info = line.split()
-#			time[j] = float(info[0])
 			positions[i,j,0] = float(info[1])
 			positions[i,j,1] = float(info[2])
 			positions[i,j,2] = float(info[3])
@@ -94,7 +92,8 @@ def readEnergy():
 		clusterEnergy[i] = info[3]
 		boundClusterEnergy[i] = info[4]
 		i += 1
-
+	
+	inFile.close()
 	averageKineticEnergy = kineticEnergy / N
 	averagePotentialEnergy = potentialEnergy / N
 
@@ -107,14 +106,15 @@ def readBoundObjects():
 	global boundObjects; boundObjects = np.zeros(n)
 
 	for i in range(N):
-		inFile = open("../data/energy/objects/obj%s.dat" % i, 'r')
+		inFile = open("../data/objects/obj%s.dat" % i, 'r')
 		inFile.readline()
 		j = 0
 		for line in inFile:
 			info = line.split()
-			bound[i,j] = int(info[4])
+			bound[i,j] = int(info[7])
 			j += 1
-
+	
+	inFile.close()
 	for i in range(n):
 		boundObjects[i] = np.sum(bound[:,i])
 	
@@ -133,7 +133,7 @@ def animateCluster():
 		x,y,z = positions[i,0]
 		dots.append(ax3.plot([x],[y],[z],'o')[0])
 
-	ax3.set_xlim([-R0,R0])
+	ax3.set_xlim([-1.5 * R0, 1.5 * R0])
 	ax3.set_ylim([-R0,R0])
 	ax3.set_zlim([-R0,R0])
 

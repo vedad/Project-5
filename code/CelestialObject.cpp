@@ -5,7 +5,7 @@
 using namespace std;
 using namespace arma;
 
-const double EPSILON = 0.00;
+const double EPSILON = 0.15;
 
 CelestialObject :: CelestialObject(string name, vec position, vec velocity, double mass) {
 

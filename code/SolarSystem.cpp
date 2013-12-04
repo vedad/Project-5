@@ -157,13 +157,11 @@ void SolarSystem :: advance(double dt) {
 
 }
 
-void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool angMom, string solver) {
+void SolarSystem :: systemSimulation(double dt, double tMax, string solver) {
 	
-	ofstream *newEnergyFile;
-	vector<ofstream*> objectEnergyList;
-	ofstream *newAngMomFile;
-	vector<ofstream*> objectAngMomList;
-
+//	ofstream *newEnergyFile;
+//	vector<ofstream*> objectEnergyList;
+	/*
 	if (energy) {
 		
 		for (int i=0; i < getNoOfObjects(); i++) {
@@ -176,19 +174,7 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 
 		}
 	}
-
-	if (angMom) {
-
-		for (int i=0; i < getNoOfObjects(); i++) {
-			
-			ostringstream angMomFile;
-			angMomFile << "../data/conservations/angularmomentum/" << objects[i].getName() << ".dat";
-			newAngMomFile = new ofstream(angMomFile.str().c_str());
-			*newAngMomFile << "Angular momentum for: " << objects[i].getName() << endl;
-			objectAngMomList.push_back(newAngMomFile);
-
-		}
-	}
+	*/
 
 	ofstream *newPositionFile;
 	vector<ofstream*> objectFileList;
@@ -214,11 +200,8 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 			
 					
 			for (int i=0; i < getNoOfObjects(); i++) {
-				*objectFileList[i] << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << endl;
+				*objectFileList[i] << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
 
-				if (energy) {
-					*objectEnergyList[i] << t << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << endl;
-				}
 			}
 
 			start = clock();
@@ -242,17 +225,12 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 		for (double t=0; t <= tMax; t+=dt) {
 
 			for (int i=0; i < getNoOfObjects(); i++) {
-				*objectFileList[i] << t << " " << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << endl;
+				*objectFileList[i] << t << " " << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
 
-				if (energy) {
-					
-					*objectEnergyList[i] << t << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
-				}
 			}
 			
-			if (energy) {
-				clusterEnergyFile << t << " " << getClusterKineticEnergy() << " " << getClusterPotentialEnergy() << " " << getClusterEnergy() << " " << getBoundClusterEnergy() << endl;
-			}
+			clusterEnergyFile << t << " " << getClusterKineticEnergy() << " " << getClusterPotentialEnergy() << " " << getClusterEnergy() << " " << getBoundClusterEnergy() << endl;
+
 			start = clock();
 			this->leapFrog(dt);
 			finish = clock();
@@ -266,7 +244,6 @@ void SolarSystem :: systemSimulation(double dt, double tMax, bool energy, bool a
 
 	for (int i = 0; i < getNoOfObjects(); i++) {
 		objectFileList[i]->close();
-		if (energy) { objectEnergyList[i]->close(); }
 	}
 	
 //	outFile.close();
@@ -298,7 +275,7 @@ vec SolarSystem :: getSystemForce(CelestialObject object) {
 		}
 	}
 
-	return systemForce; // * getGravConst
+	return systemForce * getGravConst();
 }
 
 // Calculating the acceleration of an object.
@@ -344,19 +321,7 @@ double SolarSystem :: getClusterKineticEnergy() {
 	}
 	return clusterKineticEnergy;
 }
-/* 
-double SolarSystem :: getBoundClusterKineticEnergy() {
 
-	double kineticEnergy = 0.0;
-
-	for (int i=0; i < getNoOfObjects(); i++) {
-		if (getTotalEnergy(objects[i]) < 0) {
-			c
-		}
-	}
-
-}
-*/
 double SolarSystem :: getBoundClusterEnergy() {
 
 	double clusterPotentialEnergy = 0.0;
@@ -428,7 +393,7 @@ double SolarSystem :: getSystemPotentialEnergy(CelestialObject object) {
 			potentialEnergy += object.getPotentialEnergy(objects[i]);
 		}
 	}
-	return  potentialEnergy; // * getGravConst()
+	return  potentialEnergy * getGravConst();
 }
 
 vec SolarSystem :: getCenterOfMassPosition() {

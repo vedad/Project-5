@@ -14,7 +14,7 @@ class SolarSystem {
 		void addObject(CelestialObject);
 		void advance(double);
 		void leapFrog(double);
-		void systemSimulation(double, double, bool, bool, string);
+		void systemSimulation(double, double, string);
 		double getSystemPotentialEnergy(CelestialObject);
 		double getTotalEnergy(CelestialObject);
 		double getAngularMomentum(CelestialObject);
