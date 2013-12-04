@@ -10,14 +10,28 @@ def readInfo():
 	N, R0, dt, Tmax = int(info[0]), float(info[1]), float(info[2]), float(info[3])
 	n = int(round(Tmax / dt)) + 1
 	infoFile.close()
+	global properties; properties = '$N = %g$, $R_0 = %g$, $dt = %g$' 
 	return None
 readInfo()
 
+def readTime():
+	
+	global time; time = np.zeros(n)
+	inFile = open("../data/energy/cluster/clusterEnergy.dat", 'r')
+	j = 0
+	for line in inFile:
+		info = line.split()
+		time[j] = float(info[0])
+		j += 1
+	inFile.close()
+	return None
+readTime()
+	
 def readPositions():
 	
-	global positions, time
+	global positions
 	positions = np.zeros((N,n,3))
-	time = np.zeros(n)
+#	time = np.zeros(n)
 	
 	for i in range(N):
 		inFile = open("../data/objects/obj%s.dat" % i, 'r')
@@ -25,7 +39,7 @@ def readPositions():
 		j = 0
 		for line in inFile:
 			info = line.split()
-			time[j] = float(info[0])
+#			time[j] = float(info[0])
 			positions[i,j,0] = float(info[1])
 			positions[i,j,1] = float(info[2])
 			positions[i,j,2] = float(info[3])
@@ -35,22 +49,25 @@ def readPositions():
 readPositions()
 
 def readEnergy():
-
-	global totalEnergy, kineticEnergy, bound
-#	totalEnergy = np.zeros(n)
+	"""
+	global kineticEnergy potentialEnergy, totalBoundEnergy, bound
+	totalEnergy = np.zeros(n)
 	kineticEnergy = np.zeros(n)
 	potentialEnergy = np.zeros(n)
-#	bound = np.zeros((n,N))
-	
+	totalBoundEnergy = np.zeros(n)
+	bound = np.zeros((N,n))
+
 	for i in range(N):
-		inFile = open("../data/conservations/energy/obj%s.dat" % i, 'r')
+		inFile = open("../data/energy/objects/obj%s.dat" % i, 'r')
 		inFile.readline()
 		j = 0
 		for line in inFile:
 			info = line.split()
 			objectKinEn = float(info[1])
 			objectPotEn = float(info[2])
-#			bound[i,j] = int(info[4])	
+			bound[i,j] = int(info[4])	
+			if (bound[i,j] == 0):
+				totalBoundEnergy[j] = totalBoundEnergy[j] + objectKinEn + objectPotEn	
 			kineticEnergy[j] += objectKinEn
 			potentialEnergy[j] += objectPotEn
 			objectKinEn = 0
@@ -59,9 +76,50 @@ def readEnergy():
 	
 	potentialEnergy /= 2.
 	totalEnergy = kineticEnergy + potentialEnergy
+	"""
+
+	inFile = open("../data/energy/cluster/clusterEnergy.dat", 'r')
+	global kineticEnergy, potentialEnergy, clusterEnergy, boundClusterEnergy
+	global averageKineticEnergy, averagePotentialEnergy
+	kineticEnergy = np.zeros(n)
+	potentialEnergy = np.zeros(n)
+	clusterEnergy = np.zeros(n)
+	boundClusterEnergy = np.zeros(n)
+		
+	i = 0;
+	for line in inFile:
+		info = line.split()
+		kineticEnergy[i] = info[1]
+		potentialEnergy[i] = info[2]
+		clusterEnergy[i] = info[3]
+		boundClusterEnergy[i] = info[4]
+		i += 1
+
+	averageKineticEnergy = kineticEnergy / N
+	averagePotentialEnergy = potentialEnergy / N
+
 	return None
 readEnergy()
+
+def readBoundObjects():
+
+	bound = np.zeros((N,n))
+	global boundObjects; boundObjects = np.zeros(n)
+
+	for i in range(N):
+		inFile = open("../data/energy/objects/obj%s.dat" % i, 'r')
+		inFile.readline()
+		j = 0
+		for line in inFile:
+			info = line.split()
+			bound[i,j] = int(info[4])
+			j += 1
+
+	for i in range(n):
+		boundObjects[i] = np.sum(bound[:,i])
 	
+	return None
+readBoundObjects()
 		
 def animateCluster():
 
@@ -98,14 +156,57 @@ def plotEnergy():
 	ax = fig.add_subplot(111)
 	ax.set_title('$N = %g$, $R_0 = %g$, $dt = %g$' % (N,R0,dt))
 	ax.set_xlabel('$t \\ [\\tau_{\mathrm{crunch}}]$', fontsize='14')
-	ax.set_ylabel('$\mathrm{Total \ energy}$', fontsize='14')
-	ax.plot(time,totalEnergy)
+	ax.set_ylabel('$\mathrm{Cluster \ energy} \ [\mathrm{unknown}]$', fontsize='14')
+	ax.plot(time,clusterEnergy, label='$E$')
+	ax.hold('on')
+	ax.plot(time,kineticEnergy, '--', label='$E_k$')
+	ax.plot(time,potentialEnergy, '--', label='$E_p$')
+	ax.legend(loc='best')
+	ax.hold('off')
 	ax.grid('on')
+
+	fig2 = plt.figure()
+	fig2.suptitle('$\mathrm{Cluster \ energy \ with \ all \ and \ bound \ objects}$', fontsize='14')
+	ax2 = fig2.add_subplot(111)
+	ax2.set_title('$N = %g$, $R_0 = %g$, $dt = %g$' % (N,R0,dt))
+	ax2.set_xlabel('$t \\ [\\tau_{\mathrm{crunch}}]$', fontsize='14')
+	ax2.set_ylabel('$\mathrm{Cluster \ energy} \ [\mathrm{unknown}]$', fontsize='14')
+	ax2.plot(time,clusterEnergy, label='$\mathrm{All \ objects}$')
+	ax2.hold('on')
+	ax2.plot(time,boundClusterEnergy, label='$\mathrm{Bound \ objects}$')
+	ax2.hold('off')
+	ax2.legend(loc='best')
+	ax2.grid('on')
+
+	fig3 = plt.figure()
+	fig3.suptitle('$\mathrm{Testing \ the \ virial \ theorem}$', fontsize='14')
+	ax3 = fig3.add_subplot(111)
+	ax3.set_title(properties % (N,R0,dt))
+	ax3.set_xlabel('$t \\ [{\\tau_{\mathrm{crunch}}}]$', fontsize='14')
+	ax3.set_ylabel('$<K>/<V>$', fontsize='14')
+	ax3.plot(time,averageKineticEnergy/averagePotentialEnergy)
+	ax3.grid('on')
+
 	return None
 
+
+def plotBoundObjects():
+	
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	fig.suptitle('$\mathrm{Number \ of \ bound \ objects \ over \ time}$', fontsize='14')
+	ax.set_title('$N = %g$, $R_0 = %g$, $dt = %g$' % (N,R0,dt))
+	ax.set_xlabel('$t \ [\\tau_{\mathrm{crunch}}]$', fontsize='14')
+	ax.set_ylabel('$\mathrm{Number \ of \ bound \ objects}$', fontsize='14')
+	ax.plot(time,boundObjects)
+	ax.grid('on')
+	
+	return None
+	
 plt.ion()
 plotEnergy()
 #animateCluster()
+plotBoundObjects()
 plt.ioff()
 
 plt.show()
