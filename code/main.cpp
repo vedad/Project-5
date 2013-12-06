@@ -7,8 +7,8 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 	
-	int N = 300;
-	double dt = 0.01;
+	int N = 100;
+	double dt = 0.001;
 	double R0 = 20;
 	double tMax = 5;
 	clock_t start, finish;	

@@ -196,20 +196,25 @@ void SolarSystem :: systemSimulation(double dt, double tMax, string solver) {
 		double totalTime = 0;
 		clock_t start, finish;
 
+		fstream clusterEnergyFile;
+		clusterEnergyFile.open("../data/energy/cluster/clusterEnergy.dat", ios::out);
+
+
 		for (double t=0; t <= tMax; t+=dt) {
-			
 					
 			for (int i=0; i < getNoOfObjects(); i++) {
-				*objectFileList[i] << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
+				*objectFileList[i] << t << " " << objects[i].getPosition()[0] << " " << objects[i].getPosition()[1] << " " << objects[i].getPosition()[2] << " " << objects[i].getKineticEnergy(objects[i]) << " " << getSystemPotentialEnergy(objects[i]) << " " << getTotalEnergy(objects[i]) << " " << getBoundObjects(objects[i]) << endl;
 
 			}
+
+			clusterEnergyFile << t << " " << getClusterKineticEnergy() << " " << getClusterPotentialEnergy() << " " << getClusterEnergy() << " " << getBoundClusterEnergy() << endl;
 
 			start = clock();
 			this->advance(dt);
 			finish = clock();
 			totalTime += double(finish - start)/CLOCKS_PER_SEC;
-
 		}
+		clusterEnergyFile.close();
 		double avgTimeStep = totalTime / (tMax / dt);
 		cout << "Computation time for one timestep using RK4: " << avgTimeStep << " seconds" << endl;
 	}
@@ -263,7 +268,7 @@ vec SolarSystem :: getSystemForce(CelestialObject object) {
 	// Initialize systemForce as a vector of size 2, with zeros as entries since
 	// I use += function below.
 	vec systemForce = zeros<vec>(DIMENSION);
-	#pragma omp parallel for private (r) shared (systemForce)
+//	#pragma omp parallel for private (r) shared (systemForce)
 	for (int i=0; i < getNoOfObjects(); i++) {
 	
 		if (object.getName() == objects[i].getName()) { continue; }
@@ -310,7 +315,7 @@ double SolarSystem :: getClusterPotentialEnergy() {
 			clusterPotentialEnergy += objects[i].getPotentialEnergy(objects[j]);
 		}
 	}
-	return getGravConst() * clusterPotentialEnergy;
+	return clusterPotentialEnergy * getGravConst();
 }
 
 double SolarSystem :: getClusterKineticEnergy() {
@@ -336,7 +341,7 @@ double SolarSystem :: getBoundClusterEnergy() {
 		}
 	}
 
-	double clusterEnergy = clusterKineticEnergy + getGravConst() * clusterPotentialEnergy;
+	double clusterEnergy = clusterKineticEnergy + clusterPotentialEnergy * getGravConst();
 	return clusterEnergy;	
 }
 
@@ -351,7 +356,7 @@ double SolarSystem :: getClusterEnergy() {
 			clusterPotentialEnergy += objects[i].getPotentialEnergy(objects[j]);
 		}
 	}
-	double clusterEnergy = clusterKineticEnergy + getGravConst() * clusterPotentialEnergy;
+	double clusterEnergy = clusterKineticEnergy +  clusterPotentialEnergy * getGravConst();
 
 	return clusterEnergy;
 
@@ -430,7 +435,7 @@ void SolarSystem :: setTotalMomentum() {
 
 //	objects[0].setVelocity(objects[0].getVelocity() * 0);
 	vec totalMomentum = getTotalMomentum();
-	objects[0].setVelocity(objects[0].getVelocity() - totalMomentum/objects[0].getMass());
+	objects[0].setVelocity(-totalMomentum/objects[0].getMass());
 }
 
 double SolarSystem :: getGravConst() {

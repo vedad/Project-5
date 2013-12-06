@@ -8,7 +8,7 @@ def readInfo():
 	global N, R0, dt, Tmax, n
 	info = infoFile.readline().split()
 	N, R0, dt, Tmax = int(info[0]), float(info[1]), float(info[2]), float(info[3])
-	n = int(round(Tmax / dt)) + 1
+	n = int(round(Tmax / dt)) 
 	infoFile.close()
 	global properties; properties = '$N = %g$, $R_0 = %g$, $dt = %g$' 
 	return None
@@ -47,38 +47,44 @@ def readPositions():
 readPositions()
 
 def readEnergy():
-	"""
-	global kineticEnergy potentialEnergy, totalBoundEnergy, bound
-	totalEnergy = np.zeros(n)
+		
+	global averageKineticEnergy, averagePotentialEnergy
+#	totalEnergy = np.zeros(n)
 	kineticEnergy = np.zeros(n)
 	potentialEnergy = np.zeros(n)
-	totalBoundEnergy = np.zeros(n)
+	boundKinEn = np.zeros(n)
+	boundPotEn = np.zeros(n)
 	bound = np.zeros((N,n))
 
 	for i in range(N):
-		inFile = open("../data/energy/objects/obj%s.dat" % i, 'r')
+		inFile = open("../data/objects/obj%s.dat" % i, 'r')
 		inFile.readline()
 		j = 0
 		for line in inFile:
 			info = line.split()
-			objectKinEn = float(info[1])
-			objectPotEn = float(info[2])
-			bound[i,j] = int(info[4])	
-			if (bound[i,j] == 0):
-				totalBoundEnergy[j] = totalBoundEnergy[j] + objectKinEn + objectPotEn	
+			objectKinEn = float(info[4])
+			objectPotEn = float(info[5])
+			bound[i,j] = int(info[7])	
+			if (bound[i,j] == 1):
+				boundKinEn[j] = boundKinEn[j] + objectKinEn
+				boundPotEn[j] = boundPotEn[j] + objectPotEn
 			kineticEnergy[j] += objectKinEn
 			potentialEnergy[j] += objectPotEn
 			objectKinEn = 0
 			objectPotEn = 0
 			j += 1
+
+	boundPotEn /= 2.
+	averageKineticEnergy = boundKinEn / N
+	averagePotentialEnergy = boundPotEn / N
 	
-	potentialEnergy /= 2.
-	totalEnergy = kineticEnergy + potentialEnergy
-	"""
+	return None
+readEnergy()
+	
+def readClusterEnergy():
 
 	inFile = open("../data/energy/cluster/clusterEnergy.dat", 'r')
 	global kineticEnergy, potentialEnergy, clusterEnergy, boundClusterEnergy
-	global averageKineticEnergy, averagePotentialEnergy
 	kineticEnergy = np.zeros(n)
 	potentialEnergy = np.zeros(n)
 	clusterEnergy = np.zeros(n)
@@ -94,11 +100,9 @@ def readEnergy():
 		i += 1
 	
 	inFile.close()
-	averageKineticEnergy = kineticEnergy / N
-	averagePotentialEnergy = potentialEnergy / N
 
 	return None
-readEnergy()
+readClusterEnergy()
 
 def readBoundObjects():
 
