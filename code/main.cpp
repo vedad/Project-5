@@ -7,7 +7,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 	
-	int N = 100;
+	int N = 200;
 	double dt = 0.001;
 	double R0 = 20;
 	double tMax = 5;
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 	outFile.open("../data/info.dat", ios::out);
 	outFile << N << " " << R0 << " " << dt << " " << tMax << endl;
 	outFile.close();
-	cout << "Still here." << endl;
+	cout << "Completed!" << endl;
 
 	return 0;
 }
