@@ -183,11 +183,11 @@ def plotEnergy():
 	ax2.grid('on')
 
 	fig3 = plt.figure()
-	fig3.suptitle('$\mathrm{Testing \ the \ virial \ theorem}$', fontsize='14')
+#	fig3.suptitle('$\mathrm{Testing \ the \ virial \ theorem}$', fontsize='14')
 	ax3 = fig3.add_subplot(111)
-	ax3.set_title(properties % (N,R0,dt))
-	ax3.set_xlabel('$t \\ [{\\tau_{\mathrm{crunch}}}]$', fontsize='14')
-	ax3.set_ylabel('$<K>/<V>$', fontsize='14')
+	ax3.set_title(properties % (N,R0,dt), fontsize='24')
+	ax3.set_xlabel('$t \\ [{\\tau_{\mathrm{crunch}}}]$', fontsize='24')
+	ax3.set_ylabel('$<K>/<V>$', fontsize='24')
 	ax3.plot(time,averageKineticEnergy/averagePotentialEnergy)
 	ax3.grid('on')
 
