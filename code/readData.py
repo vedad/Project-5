@@ -55,6 +55,8 @@ def readEnergy():
 	boundKinEn = np.zeros(n)
 	boundPotEn = np.zeros(n)
 	bound = np.zeros((N,n))
+	totalEnergy = np.zeros(n)
+	boundCounter = np.zeros(n)
 
 	for i in range(N):
 		inFile = open("../data/objects/obj%s.dat" % i, 'r')
@@ -64,10 +66,17 @@ def readEnergy():
 			info = line.split()
 			objectKinEn = float(info[4])
 			objectPotEn = float(info[5])
+			objectTotalEn = float(info[6])
 			bound[i,j] = int(info[7])	
-			if (bound[i,j] == 1):
-				boundKinEn[j] = boundKinEn[j] + objectKinEn
-				boundPotEn[j] = boundPotEn[j] + objectPotEn
+			if (objectTotalEn < 0):
+				boundKinEn[j] += objectKinEn
+				boundPotEn[j] += objectPotEn
+				boundCounter[j] += 1
+			if (objectTotalEn >= 0):
+				boundPotEn[j] -= objectPotEn
+#			if (bound[i,j] == 1):
+#				boundKinEn[j] = boundKinEn[j] + objectKinEn
+#				boundPotEn[j] = boundPotEn[j] + objectPotEn
 			kineticEnergy[j] += objectKinEn
 			potentialEnergy[j] += objectPotEn
 			objectKinEn = 0
@@ -75,8 +84,8 @@ def readEnergy():
 			j += 1
 
 	boundPotEn /= 2.
-	averageKineticEnergy = boundKinEn / N
-	averagePotentialEnergy = boundPotEn / N
+	averageKineticEnergy = boundKinEn / boundCounter
+	averagePotentialEnergy = boundPotEn / boundCounter
 	
 	return None
 readEnergy()
@@ -187,7 +196,7 @@ def plotEnergy():
 	ax3 = fig3.add_subplot(111)
 	ax3.set_title(properties % (N,R0,dt), fontsize='24')
 	ax3.set_xlabel('$t \\ [{\\tau_{\mathrm{crunch}}}]$', fontsize='24')
-	ax3.set_ylabel('$<K>/<V>$', fontsize='24')
+	ax3.set_ylabel('$\langle K \\rangle/\langle V \\rangle$', fontsize='24')
 	ax3.plot(time,averageKineticEnergy/averagePotentialEnergy)
 	ax3.grid('on')
 

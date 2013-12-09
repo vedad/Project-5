@@ -13,15 +13,21 @@ int main(int argc, char* argv[]) {
 	double tMax = 5;
 	clock_t start, finish;	
 	start = clock();
-//	SolarSystem mySystem = SolarSystem("../data/parameters/sunJupiter.dat");
-	SolarSystem myCluster = SolarSystem(N, R0);
+
+	/*	For the two-body problem. */
+//	SolarSystem mySystem = SolarSystem("../data/parameters/Sirius.dat");
 //	mySystem.setCenterOfMassPosition();
 //	mySystem.setTotalMomentum();
-	myCluster.systemSimulation(dt, tMax, "leapfrog");
 //	mySystem.systemSimulation(dt, tMax, "leapfrog");
+	
+	/*  For the cluster simulation. */
+	SolarSystem myCluster = SolarSystem(N, R0);
+	myCluster.systemSimulation(dt, tMax, "leapfrog");
+
 	finish = clock();
 	cout << "Computation time: " << double(finish - start)/CLOCKS_PER_SEC << " seconds" << endl;
 	
+	/* Writing parameters to an information file. */
 	fstream outFile;
 	outFile.open("../data/info.dat", ios::out);
 	outFile << N << " " << R0 << " " << dt << " " << tMax << endl;

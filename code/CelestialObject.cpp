@@ -15,28 +15,25 @@ CelestialObject :: CelestialObject(string name, vec position, vec velocity, doub
 	this->name = name;
 
 }
-/*
-CelestialObject :: CelestialObject(vec position, vec velocity, double mass) {
 
-	this->mass = mass;
-	this->position = position;
-	this->velocity = velocity;
-}
-*/
+/* Set-functions */
 
-// Set-functions
+// Sets a new velocity for an object.
 void CelestialObject :: setVelocity(vec newVelocity) {
 
 	velocity = newVelocity;
 
 }
 
+// Sets a new position for an object.
 void CelestialObject :: setPosition(vec newPosition) {
 	position = newPosition;
 }
 
 
-// Get-functions
+/* Get-functions */
+
+// Gets the distance between two objects.
 vec CelestialObject :: getDistanceTo(CelestialObject other) {
 	
 	vec distance = other.getPosition() - this->getPosition();
@@ -44,6 +41,7 @@ vec CelestialObject :: getDistanceTo(CelestialObject other) {
 
 }
 
+// Gets the force between two objects.
 vec CelestialObject :: getForce(CelestialObject other) {
 	
 	vec r = this->getDistanceTo(other);
@@ -53,6 +51,7 @@ vec CelestialObject :: getForce(CelestialObject other) {
 		
 }
 
+// Gets the acceleration of an object given the force from another.
 vec CelestialObject :: getAcceleration(CelestialObject other) {
 
 	vec force = getForce(other);
@@ -60,13 +59,14 @@ vec CelestialObject :: getAcceleration(CelestialObject other) {
 	return acceleration;
 
 }
-   
+
+// Gets the kinetic energy of an object.
 double CelestialObject :: getKineticEnergy(CelestialObject object) {
 	double kineticEnergy = 0.5 * object.getMass() * norm(object.getVelocity(),2) * norm(object.getVelocity(),2);
 	return kineticEnergy;
 }
 
- 
+// Gets the potential energy between two objects. 
 double CelestialObject :: getPotentialEnergy(CelestialObject other) {
 
 	vec r = this->getDistanceTo(other);

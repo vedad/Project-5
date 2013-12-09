@@ -17,7 +17,6 @@ class SolarSystem {
 		void systemSimulation(double, double, string);
 		double getSystemPotentialEnergy(CelestialObject);
 		double getTotalEnergy(CelestialObject);
-		double getAngularMomentum(CelestialObject);
 		int getNoOfObjects();
 		vec getCenterOfMassPosition();
 		void setCenterOfMassPosition();
