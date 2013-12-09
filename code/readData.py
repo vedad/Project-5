@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 def readInfo():
-	
+	"""
+	Reads information file to get parameters to set as plot title.
+	"""
 	infoFile = open("../data/info.dat", 'r')
 	global N, R0, dt, Tmax, n
 	info = infoFile.readline().split()
@@ -15,7 +17,9 @@ def readInfo():
 readInfo()
 
 def readTime():
-	
+	"""
+	Reads the time and makes an array.
+	"""
 	global time; time = np.zeros(n)
 	inFile = open("../data/energy/cluster/clusterEnergy.dat", 'r')
 	j = 0
@@ -28,7 +32,9 @@ def readTime():
 readTime()
 	
 def readPositions():
-	
+	"""
+	Reads the positions of every object.
+	"""
 	global positions
 	positions = np.zeros((N,n,3))
 	
@@ -47,14 +53,14 @@ def readPositions():
 readPositions()
 
 def readEnergy():
-		
+	"""
+	Reads the energy of every object.
+	"""
 	global averageKineticEnergy, averagePotentialEnergy
-#	totalEnergy = np.zeros(n)
 	kineticEnergy = np.zeros(n)
 	potentialEnergy = np.zeros(n)
 	boundKinEn = np.zeros(n)
 	boundPotEn = np.zeros(n)
-	bound = np.zeros((N,n))
 	totalEnergy = np.zeros(n)
 	boundCounter = np.zeros(n)
 
@@ -74,9 +80,6 @@ def readEnergy():
 				boundCounter[j] += 1
 			if (objectTotalEn >= 0):
 				boundPotEn[j] -= objectPotEn
-#			if (bound[i,j] == 1):
-#				boundKinEn[j] = boundKinEn[j] + objectKinEn
-#				boundPotEn[j] = boundPotEn[j] + objectPotEn
 			kineticEnergy[j] += objectKinEn
 			potentialEnergy[j] += objectPotEn
 			objectKinEn = 0
