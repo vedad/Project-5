@@ -6,6 +6,7 @@ distributed uniformly in a sphere of radius R. The equations of motion are
 solved numerically by applying the ODE solver Runge-Kutta 4.
 
 
+The folder `code` contains the different programs used to solve this project.
 Here follows a list describing the function of each program.
 * `gaussiandeviate` draws random numbers that were used in determining the
 	initial positions and the masses of the bodies.
