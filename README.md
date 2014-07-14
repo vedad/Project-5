@@ -10,7 +10,7 @@ Here follows a list describing the function of each program.
 * `gaussiandeviate` draws random numbers that were used in determining the
 	initial positions and the masses of the bodies.
 * `makeObjects` uses `gaussiandeviate` to draw random positions inside a
-	sphere of radius `R`. It draws masses with a given mean value and deviation.
+	sphere of radius R. It draws masses with a given mean value and deviation.
 * `CelestialObject` contains the attributes of each object.
 * `SolarSystem` solves the equation of motion for the entire system by using
 	Runge-Kutta 4. The name of the program sticked from an earlier
